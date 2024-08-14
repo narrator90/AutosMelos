@@ -1,4 +1,3 @@
-
 # Felhasználói Útmutató
 
 ## Regisztráció
@@ -32,3 +31,24 @@ A regisztrált és bejelentkezett felhasználók számára elérhetővé válik 
 
 - **Képek megtekintése**  
   A táblázatban található *"Képek"* gomb megnyomásával egy modal ablak nyílik meg, ahol a járműhöz tartozó képek tekinthetők meg.
+
+- **Új márka ajánlása**  
+  Az oldalon lehetőség van új autó márkák ajánlására az adminisztrátorok számára. Ha hiányosnak találjuk a márkák listáját, javasolhatunk új márkákat, amelyek felkerülhetnek a rendszerbe.
+
+## Felhasználói Fiók Beállítások
+
+### Fiók Beállítások
+
+A felhasználó nevünkre kattintva a menüben elérhetjük a fiók beállításait, ahol az alábbi műveleteket végezhetjük el:
+
+- **E-mail cím módosítása**  
+  Az e-mail címünket frissíthetjük a fiók beállításai között. Az új e-mail cím megadásával biztosíthatjuk, hogy a rendszer az új címre küldje a kommunikációt.
+
+- **Teljes név módosítása**  
+  A teljes nevünket szintén módosíthatjuk. Az új név megadásával frissíthetjük a fiókunkban szereplő információkat.
+
+- **Jelszó változtatása**  
+  A jelszavunkat itt változtathatjuk meg. Új jelszó megadásával biztosíthatjuk fiókunk biztonságát.
+
+- **Felhasználói fiók törlése**  
+  A fiók törlésének kérésére is van lehetőség. A fiók törlése végleges, és az összes adatunk eltávolításra kerül az alkalmazásból.
