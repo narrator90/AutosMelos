@@ -1,17 +1,28 @@
-﻿(.Net 8  C#)
-Első lépés: 
+# .Net 8 C# Konfiguráció
 
-Configuration file megnyitása.
-	ConnectionString beállítása
-	AutoSeed ha true, akkor automatikusan megpróbálja létrehozni az adatbázist és feltölteni az alap adatokat.
-	Ha False, akkor manuálisan kell feltölteni az egészet a .sql file segítségével.
-	Az Autoseed alapvetően migrál, és amennyiben nincs a táblákban adat, akkor ad hozzá saját adatot.
+## Első lépés
 
-	Alapvető felhasználók (Username / Pass / Role):
-		- admin / 123456aA! / Administrator
-		- user / 123456aA! / User
+### Konfigurációs fájl megnyitása
+- **ConnectionString beállítása**: A megfelelő adatbázis kapcsolatának konfigurálása.
+- **AutoSeed beállítás**:
+  - Ha `true`, a rendszer automatikusan létrehozza az adatbázist és feltölti az alap adatokat.
+  - Ha `false`, manuálisan kell feltölteni az adatbázist a `.sql` fájl segítségével.
 
-Azon felhasználók, akiket az admin vesz fel, alapértelmezetten a "123456aA!" jelszót fogják megkapni.
-A jelszó policy-hez kapcsolódó beállítások az appsettings.json-ben találhatóak.
-	Alapvetően mindenki User, aki be van jelentkezve, tehát erre külön Role-t nem használ a rendszer.
-	Az Autoseed automatikusan lefut minden alkalommal amikor a webalkalmazás elindításra kerül, azonban ha az adatbázis a legfrissebb vagy van adat a táblában, akkor átugorja ezt a részt.
+### AutoSeed működése
+- Alapvetően az AutoSeed migrálja az adatbázist, és ha nincs adat a táblákban, akkor hozzáadja az alapértelmezett adatokat.
+
+### Alapvető felhasználók és jogosultságok
+- **Felhasználók**:
+  - `admin / 123456aA! / Administrator`
+  - `user / 123456aA! / User`
+  
+- Az adminisztrátor által létrehozott felhasználók alapértelmezett jelszava: `123456aA!`.
+
+### Jelszó policy
+- A jelszó szabályzatához kapcsolódó beállítások az `appsettings.json` fájlban találhatók.
+
+### Jogosultságkezelés
+- Minden bejelentkezett felhasználó alapértelmezetten "User" szerepkört kap, így erre külön Role nem szükséges.
+
+### AutoSeed futtatása
+- Az AutoSeed minden alkalommal lefut, amikor a webalkalmazás elindul. Ha az adatbázis naprakész, vagy már van adat a táblákban, a folyamat kihagyásra kerül.
