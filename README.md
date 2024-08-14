@@ -3,6 +3,7 @@
 ## A rendszer BlazorWebApp-ot használ és .net 8 alatt fut.
 
 [Felhasználói utasítás](other/FelhasznaloiUtasitas.md)
+<br>
 [Admin utasítás](other/AdminUtasitas.md)
 
 ## Konfigurációs fájl megnyitása
