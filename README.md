@@ -2,6 +2,9 @@
 
 ## A rendszer BlazorWebApp-ot használ és .net 8 alatt fut.
 
+[Felhasználói utasítás](other/FelhasznaloiUtasitas.md)
+[Admin utasítás](other/AdminUtasitas.md)
+
 ## Konfigurációs fájl megnyitása
 - **ConnectionString beállítása**: A megfelelő adatbázis kapcsolatának konfigurálása.
 - **AutoSeed beállítás**:
