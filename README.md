@@ -26,3 +26,6 @@
 
 ## AutoSeed futtatása
 - Az AutoSeed minden alkalommal lefut, amikor a webalkalmazás elindul. Ha az adatbázis naprakész, vagy már van adat a táblákban, a folyamat kihagyásra kerül.
+
+## Adatbázis
+![kapcsolatok és lekérdezései](other/diagram.png)
