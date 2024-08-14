@@ -1,0 +1,152 @@
+﻿@using Autokereskedes_BS.Data
+@using Autokereskedes_BS.Services
+@using Autokereskedes_BS.Services.Interfaces
+@using System.ComponentModel.DataAnnotations
+@using Bito_Sandor_Autokereskedes.Data.Models
+@using Microsoft.AspNetCore.Authorization
+@inject NavigationManager _nav
+@inject ExtUserService _eus
+@inject ICarServices _carService
+
+<h3>CreateEditModal</h3>
+@attribute [Authorize(Roles = "Administrator")]
+
+<EditForm Model="Input" OnValidSubmit="CreateOrUpdate">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="year">Year</label>
+        <InputNumber @bind-Value="Input.Year" class="form-control" id="year" />
+        <ValidationMessage For="@(() => Input.Year)" />
+    </div>
+
+    <div class="form-group">
+        <label for="color">Color</label>
+        <InputText @bind-Value="Input.Color" class="form-control" id="color" />
+        <ValidationMessage For="@(() => Input.Color)" />
+    </div>
+
+    <div class="form-group">
+        <label for="fuelType">Fuel Type</label>
+        <InputText @bind-Value="Input.FuelType" class="form-control" id="fuelType" />
+        <ValidationMessage For="@(() => Input.FuelType)" />
+    </div>
+
+    <div class="form-group">
+        <label for="modelName">Model Name</label>
+        <InputText @bind-Value="Input.ModelName" class="form-control" id="modelName" />
+        <ValidationMessage For="@(() => Input.ModelName)" />
+    </div>
+
+    <div class="form-group">
+        <label for="carBrand">Car Brand</label>
+        <InputSelect @bind-Value="Input.Brand_Id" class="form-control" id="carBrand">
+            @foreach (var brand in cbm)
+            {
+                <option value="@brand.Id" selected="@(brand.Id == Input.Brand_Id)">@brand.Name</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => Input.Brand_Id)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
+
+
+
+
+
+@code {
+    private sealed class InputModel
+    {
+        public int? Id { get; set; }
+        [Required]
+        public int Year { get; set; }
+        [Required]
+        public string Color { get; set; }
+        [Required]
+        public string FuelType { get; set; }
+        [Required]
+        public string ModelName { get; set; }
+        public int Brand_Id { get; set; }
+    }
+
+    public List<CarBrandModel> cbm { get; set; } = new();
+
+
+    public void CreateOrUpdate()
+    {
+        var carmod = _carService.GetAllCarModel().FirstOrDefault(x => x.Name == Input.ModelName && x.CarBrandId == Input.Brand_Id);
+        if (carmod is null){
+            _carService.Create(new CarModel { CarBrandId = Input.Brand_Id, Name = Input.ModelName });
+            Thread.Sleep(500);
+            carmod = _carService.GetAllCarModel().FirstOrDefault(x => x.Name == Input.ModelName && x.CarBrandId == Input.Brand_Id);
+        }
+        if (!Input.Id.HasValue)
+        {
+            Car c = new Car
+                {
+                    CarModel = carmod,
+                    Color = Input.Color,
+                    CarModelId = carmod.Id,
+                    FuelType = Input.FuelType,
+                    User = user,
+                    Year = Input.Year
+                };
+            _carService.Create(c);
+        }
+        else
+        {
+            var c = _carService.GetCarById(Input.Id.Value);
+            c.CarModel = carmod;
+            c.Color = Input.Color;
+            c.CarModelId = carmod.Id;
+            c.FuelType = Input.FuelType;
+            c.User = user;
+            c.Year = Input.Year;
+            _carService.Update(c);
+        }
+        _nav.NavigateTo("/cars", true);
+    }
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    public class CarBrandModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private ApplicationUser user;
+
+    [Parameter] 
+    public int CarId { get; set; }
+    [Parameter]
+    public string UserId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        user = _eus.GetUserbyId(UserId);
+        var cbl = _carService.GetAllCarBrand();
+        foreach (var c in cbl) cbm.Add(new CarBrandModel { Id = c.Id, Name = c.Name });
+        if (CarId != 0 && CarId != null)
+        {
+            var inp = _carService.GetCarById(CarId);
+            Input.Id = inp.Id;
+            Input.ModelName = inp.CarModel.Name;
+            Input.Brand_Id = inp.CarModel.CarBrandId;
+            Input.Year = inp.Year;
+            Input.Color = inp.Color;
+            Input.FuelType = inp.FuelType;
+        }
+        
+    }
+
+
+}

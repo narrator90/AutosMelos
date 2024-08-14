@@ -1,0 +1,78 @@
+﻿@page "/Account/Manage"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Autokereskedes_BS.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Profil</PageTitle>
+
+<h3>Profil</h3>
+<StatusMessage />
+
+<div class="row">
+    <div class="col-md-6">
+        <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="form-floating mb-3">
+                <input type="text" value="@username" class="form-control" placeholder="Válassz egy felhasználónevet" disabled />
+                <label for="username" class="form-label">Felhasználónév</label>
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.TeljesNev" class="form-control" placeholder="Kérlek add meg a nevedet" />
+                <label for="TeljesNev" class="form-label">Teljes Név</label>
+                <ValidationMessage For="() => Input.TeljesNev" class="text-danger" />
+            </div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Mentés</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private ApplicationUser user = default!;
+    private string? username;
+    private string? FullName;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        username = await UserManager.GetUserNameAsync(user);
+        FullName = UserManager.Users.FirstOrDefault(x => x.UserName == username).FullName;
+
+        Input.TeljesNev ??= FullName;
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (Input.TeljesNev != FullName)
+        {
+            user.FullName = Input.TeljesNev;
+            var updateresult = await UserManager.UpdateAsync(user);
+            if (!updateresult.Succeeded)
+            {
+                RedirectManager.RedirectToCurrentPageWithStatus("Hiba a teljes név módosításakor", HttpContext);
+            }
+        }
+
+        await SignInManager.RefreshSignInAsync(user);
+        RedirectManager.RedirectToCurrentPageWithStatus("A profil frissítve lett", HttpContext);
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [Display(Name = "Teljes Név")]
+        public string TeljesNev { get; set; }
+    }
+}

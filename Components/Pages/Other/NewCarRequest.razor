@@ -1,0 +1,36 @@
+@using Autokereskedes_BS.Services
+@using Autokereskedes_BS.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@inject ICarServices _carServices
+@inject ExtUserService eus
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+
+<h3>Új Jármû ajánlása</h3>
+<label id="meslab">@Message</label>
+<InputText @bind-Value="NewBrandText" class="form-control" autocomplete="ujjarmu" aria-required="true" placeholder="Mercedes" />
+<Button class="btn btn-primary" @onclick="BrandSuggest" > Javaslom </Button>
+@attribute [Authorize]
+
+@code{
+    public string NewBrandText {get; set;}
+    private string Message { get; set; } = "";
+    public async Task BrandSuggest()
+    {
+        if (string.IsNullOrEmpty(NewBrandText))
+        {
+            Message = "Töltse ki a márkaajánló mezõt!!!";
+            return;
+        }
+        var austate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        var user = eus.GetUserByUserName(austate.User.Identity.Name);
+        _carServices.CarBrandSuggest(
+        new Data.Models.BrandSuggest
+        {
+            SuggestedName = NewBrandText,
+            UserId = user.Id,
+            User = user
+        }
+        );
+        Message = "Siker!" + user.UserName;
+    }
+}

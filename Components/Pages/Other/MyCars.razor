@@ -1,0 +1,146 @@
+﻿@page "/cars"
+@using Autokereskedes_BS.Components.Pages.Admin.FavCarModal
+@using Autokereskedes_BS.Services
+@using Autokereskedes_BS.Services.Interfaces
+@using Bito_Sandor_Autokereskedes.Data.Models
+@using Autokereskedes_BS.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@inject ApplicationDbContext DbContext
+@inject ExtUserService eus
+@inject UserManager<ApplicationUser> _usermanager
+@inject ICarServices _carService
+
+@rendermode InteractiveServer
+
+<h3>Kedvenc gépjárművek kezelése</h3>
+
+<Modal @ref="modal" />
+
+@attribute [Authorize]
+
+<button class="btn btn-primary float-end" @onclick="ShowNewModal"> Új gépjármű felvétele </button>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Év</th>
+            <th>Szín</th>
+            <th>Üzemanyag típus</th>
+            <th>Típus</th>
+            <th>Márka</th>
+            <th>---</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var car in FavCars)
+        {
+            <tr>
+                <td>@car.Year</td>
+                <td>@car.Color</td>
+                <td>@car.FuelType</td>
+                <td>@car.ModelName</td>
+                <td>@car.CarBrandName</td>
+                
+                <td><Button class="btn btn-warning" @onclick="() => ShowModal(car.Id)">Szerkesztés</Button>
+                    <button class="btn btn-danger" @onclick="() => DeleteCar(car.Id)">Töröl</button>
+                    <button class="btn btn-info" @onclick="() => ShowImageModal(car.Id)">Képek</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<NewCarRequest></NewCarRequest>
+@code {
+    private Modal modal = default!;
+    private async Task ShowNewModal()
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("UserId", user.Id);
+        await modal.ShowAsync<CreateEditModal>(title: "Új autó hozzáadása", parameters: parameters);
+    }
+    private async Task ShowModal(int i)
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("UserId", user.Id);
+        parameters.Add("CarId", i);
+        await modal.ShowAsync<CreateEditModal>(title: "Meglévő autó szerkesztése", parameters: parameters);
+    }
+
+    private async Task ShowImageModal(int i){
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("carID", i);
+        await modal.ShowAsync<FavCars>(title: "Képek", parameters: parameters);
+    }
+
+    public class FavCar
+    {
+        public int Id { get; set; }
+        public int Year { get; set; }
+        public string Color { get; set; }
+        public string FuelType { get; set; }
+        public string ModelName { get; set; }
+        public string CarBrandName {get;set;}
+    }
+    public List<FavCar> FavCars { get; set; }
+
+    private List<(string,string)> sl = new List<(string,string)>();
+
+    private List<Car> Cars;
+    private List<CarBrand> CarBrands;
+
+    [SupplyParameterFromForm]
+    private FavCar carModel { get; set; } = new();
+
+    private string carModelName = string.Empty;
+    private bool isEditing = false;
+
+    private ApplicationUser user;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        FavCars = new List<FavCar>();
+        CarBrands = new List<CarBrand>();
+        var austate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        user = eus.GetUserByUserName(austate.User.Identity.Name);
+        foreach(var c in _carService.GetCarsByUser(user))
+        {
+            FavCars.Add(new FavCar
+                {
+                    Id = c.Id,
+                    Year = c.Year,
+                    CarBrandName = c.CarModel.CarBrand.Name,
+                    Color = c.Color,
+                    FuelType = c.FuelType,
+                    ModelName = c.CarModel.Name
+            });
+        }
+        CarBrands = _carService.GetAllCarBrand();
+        foreach (var cb in CarBrands) sl.Add(new(cb.Id.ToString(), cb.Name));
+    }
+
+
+    private async Task DeleteCar(int id)
+    {
+        var car = await DbContext.Cars.FindAsync(id);
+        if (car != null)
+        {
+            DbContext.Cars.Remove(car);
+            await DbContext.SaveChangesAsync();
+            await LoadData();
+        }
+    }
+
+}

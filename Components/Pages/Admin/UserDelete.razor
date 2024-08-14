@@ -1,0 +1,67 @@
+﻿@page "/userdelete"
+@using Autokereskedes_BS.Services
+@using Microsoft.AspNetCore.Authorization
+@using static Autokereskedes_BS.Services.ExtUserService
+@inject ExtUserService eus
+@inject IJSRuntime JsRuntime
+@inject NavigationManager _nav
+
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "Administrator")]
+
+<h3>Törlést kérő felhasználók listája</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                
+            </div>
+            @if (fl.Count() > 0)
+            {
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Felhasználó név</th>
+                                <th>Teljes Név</th>
+                                <th>Törlés kérésének időpontja</th>
+                                <th> --- </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var i in fl)
+                            {
+                                <tr>
+                                    <td>@i.UserName</td>
+                                    <td>@i.FullName</td>
+                                    <td>@i.requestTime</td>
+                                    <td><Button class="btn btn-warning" @onclick="() => AppUserDelete(i)">Törlés</Button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+@code {
+    List<TorlendoFelhasznalo> fl;
+
+    protected override void OnInitialized()
+    {
+        fl = eus.GetTorlendoFelhasznaloLista();
+        base.OnInitialized();
+    }
+    public async Task AppUserDelete(TorlendoFelhasznalo tl)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Biztosan törölni szeretnéd?");
+        if (confirmed){
+            eus.DeleteUser(tl);
+            _nav.Refresh(true);
+        }
+    }
+
+}

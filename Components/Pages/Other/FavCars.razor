@@ -1,0 +1,69 @@
+﻿@using System.IO
+@using Autokereskedes_BS.Services
+@using Autokereskedes_BS.Services.Interfaces
+@using Bito_Sandor_Autokereskedes.Data.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@inject ICarServices _carservices
+
+<h3>Képek</h3>
+@attribute [Authorize]
+@if (ImageList?.Count > 0)
+{
+    foreach (var i in ImageList)
+    {
+        <img src="data:image/png;base64,@Convert.ToBase64String(i.ImageData)" alt="Image" style="max-width: 200px; margin: 10px;" />
+    }
+}
+else
+{
+    <p>Jelenleg ez a jármű nem tartalmaz még képeket.</p>
+}
+
+<h3>Új kép feltöltése</h3>
+<InputFile OnChange="HandleFileSelected" multiple/>
+@if (SelectedFiles?.Count > 0)
+{
+    <p>@SelectedFiles.Count file kiválasztva.</p>
+    <button @onclick="UploadImages">Feltöltés</button>
+}
+
+@code {
+    private List<CarImage> ImageList { get; set; } = new();
+    private List<IBrowserFile> SelectedFiles = new List<IBrowserFile>();
+
+    [Parameter]
+    public int carID { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        ImageList = _carservices.GetImages(carID);
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        SelectedFiles = e.GetMultipleFiles().ToList();
+    }
+    private async Task UploadImages()
+    {
+        foreach (var file in SelectedFiles)
+        {
+            using (var stream = file.OpenReadStream())
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await stream.CopyToAsync(memoryStream);
+                    _carservices.Create(
+                        new CarImage
+                            {
+                                CarId = carID,
+                                ImageData = memoryStream.ToArray()
+                            }
+                    );
+                }
+            }
+        }
+        SelectedFiles.Clear();
+        ImageList = _carservices.GetImages(carID);
+    }
+}

@@ -1,0 +1,46 @@
+﻿@page "/Account/Manage/PersonalData"
+@using Autokereskedes_BS.Data
+@using Autokereskedes_BS.Services
+
+@inject IdentityUserAccessor UserAccessor
+@inject ExtUserService eus
+@inject NavigationManager navi
+
+<PageTitle>Personal Data</PageTitle>
+
+<StatusMessage />
+<h3>Personal Data</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <p>Your account contains personal data that you have given us. This page allows you to download or delete that data.</p>
+        <p>
+            <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
+        </p>
+        <p>
+             <button class="btn btn-danger" onclick="@RequestDelete">Törlés kérelmezése1</button>
+             <button class="btn btn-danger" @onclick="RequestDelete">Törlés kérelmezése2</button>
+             <button class="btn btn-danger" @onclick="@RequestDelete">Törlés kérelmezése3</button>
+             <button class="btn btn-danger" onclick="RequestDelete">Törlés kérelmezése4</button>
+             <Button class="btn btn-danger" onclick="RequestDelete">Törlés kérelmezése5</Button>
+        </p>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+    }
+
+    private async Task RequestDelete()
+    {
+        var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        await eus.DeleteRequest(user);
+        //navi.Refresh(true);
+    }
+}

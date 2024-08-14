@@ -1,0 +1,101 @@
+﻿@page "/brandmanager"
+@using Autokereskedes_BS.Data.Models
+@using Autokereskedes_BS.Services.Interfaces
+@using Bito_Sandor_Autokereskedes.Data.Models
+@using Microsoft.AspNetCore.Authorization
+@inject NavigationManager _nav
+@inject ICarServices _carservice
+@rendermode InteractiveServer
+
+@attribute [Authorize(Roles = "Administrator")]
+
+<h3>Gépjármű márkák</h3>
+<div class="row">
+    <div class="col-sm-6">
+        <h3>Ajánlások</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Márka neve</th>
+                    <th>Ajánló személy</th>
+                    <th>---</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var suggest in bsList)
+                {
+                    <tr>
+                        <td>@suggest.SuggestedName</td>
+                        <td>@suggest.User.UserName</td>
+
+                        <td>
+                            <button class="btn btn-info" @onclick="() => ConfirmSuggest(suggest)">Elfogad</button>
+                            <button class="btn btn-danger" @onclick="() => DeleteSuggest(suggest)">Töröl</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="col-sm-6">
+        <h3>Márkák</h3>
+        <InputText @bind-Value="BrandName" class="form-control" aria-required="true" placeholder="Mercedes" />
+        <Button class="btn btn-primary" @onclick="AddNewBrand"> Új márka hozzáadása </Button>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Márka neve</th>
+                    <th>---</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var brand in brands)
+                {
+                    <tr>
+                        <td>@brand.Name</td>
+
+                        <td>
+                            <button class="btn btn-danger" @onclick="() => DeleteBrand(brand)">Töröl</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+@code {
+    private List<BrandSuggest> bsList { get; set; } = new();
+    private List<CarBrand> brands { get; set; } = new();
+
+
+
+    private string BrandName { get; set; }
+    private async Task AddNewBrand()
+    {
+        _carservice.Create(new CarBrand { Name = BrandName });
+        _nav.Refresh(true);
+    }
+    private void DeleteBrand(CarBrand cb)
+    {
+        _carservice.Delete(cb);
+        _nav.Refresh(true);
+    }
+
+
+    private void ConfirmSuggest(BrandSuggest bs)
+    {
+        _carservice.NewCarBrandBySuggest(bs);
+        _nav.Refresh(true);
+    }
+    private void DeleteSuggest(BrandSuggest bs)
+    {
+        _carservice.BrandSuggestDelete(bs);
+        _nav.Refresh(true);
+    }
+    protected override void OnInitialized()
+    {
+        bsList = _carservice.GetAllSuggest();
+        brands = _carservice.GetAllCarBrand();
+        base.OnInitialized();
+    }
+}

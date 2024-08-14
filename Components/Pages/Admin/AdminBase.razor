@@ -1,0 +1,17 @@
+﻿@page "/AdminPanel"
+
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Administrator")]
+
+<h3>Admin felület</h3>
+<h2>Felhasználókhoz kapcsolódó menüpontok</h2>
+
+<a class="btn btn-info" href="/ul"> Felhasználók Listája </a>
+<a class="btn btn-info" href="/userdelete"> Törlést kérő felhasználók </a>
+<a class="btn btn-info" href="/lockoutUsers"> Kizárt felhasználók </a>
+
+
+
+@code {
+
+}

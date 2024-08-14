@@ -1,0 +1,17 @@
+﻿(.Net 8  C#)
+Első lépés: 
+
+Configuration file megnyitása.
+	ConnectionString beállítása
+	AutoSeed ha true, akkor automatikusan megpróbálja létrehozni az adatbázist és feltölteni az alap adatokat.
+	Ha False, akkor manuálisan kell feltölteni az egészet a .sql file segítségével.
+	Az Autoseed alapvetően migrál, és amennyiben nincs a táblákban adat, akkor ad hozzá saját adatot.
+
+	Alapvető felhasználók (Username / Pass / Role):
+		- admin / 123456aA! / Administrator
+		- user / 123456aA! / User
+
+Azon felhasználók, akiket az admin vesz fel, alapértelmezetten a "123456aA!" jelszót fogják megkapni.
+A jelszó policy-hez kapcsolódó beállítások az appsettings.json-ben találhatóak.
+	Alapvetően mindenki User, aki be van jelentkezve, tehát erre külön Role-t nem használ a rendszer.
+	Az Autoseed automatikusan lefut minden alkalommal amikor a webalkalmazás elindításra kerül, azonban ha az adatbázis a legfrissebb vagy van adat a táblában, akkor átugorja ezt a részt.

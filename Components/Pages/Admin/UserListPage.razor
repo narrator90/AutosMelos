@@ -1,0 +1,85 @@
+﻿@page "/ul"
+@using Autokereskedes_BS.Components.Pages.Admin.UserCRUDModal
+@using Autokereskedes_BS.Data
+@using Autokereskedes_BS.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using static Autokereskedes_BS.Services.ExtUserService
+@rendermode InteractiveServer
+@inject ExtUserService _us
+@inject NavigationManager _nav
+
+<Modal @ref="modal" />
+@attribute [Authorize(Roles = "Administrator")]
+
+<h3>Felhasználók</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header"> <button class="btn btn-primary float-end" @onclick="ShowAddModal"> Új Felhasználó felvétele </button></div>
+            </div>
+            @if(felhasznaloLista.Count() > 0)
+            {
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead><tr>
+                            <th>Felhasználó név</th>
+                            <th>Teljes Név</th>
+                            <th>Kedvenc Autók száma</th>
+                            <th>Aktív</th>
+                            <th> --- </th>
+                        </tr></thead>
+                        <tbody>
+                            @foreach(var i in felhasznaloLista)
+                            {
+                             <tr>
+                                 <td>@i.UserName</td>
+                                 <td>@i.FullName</td>
+                                 <td>@i.carCount</td>
+                                 <td>@i.active</td>
+                                 <td><Button class="btn btn-warning" @onclick="() => ShowEditModal(i)">Szerkesztés</Button>
+                                     @if(i.admin){
+                                        <Button class="btn btn-secondary" @onclick="() => AddAdminRole(i)">Admin jog elvétele!</Button>
+                                     }
+                                     else{
+                                        <Button class="btn btn-info" @onclick="() => AddAdminRole(i)">Admin jog adása!</Button>
+                                     }
+                                    </td>
+                                </tr>   
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+
+
+@code {
+    List<Felhasznalo> felhasznaloLista;
+    private Modal modal = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        felhasznaloLista = new List<Felhasznalo>();
+        felhasznaloLista = await _us.GetUserLista();
+    }
+    private async Task ShowAddModal()
+    {
+        await modal.ShowAsync<UserEdit>(title: "Felhasználó hozzáadása");
+    }
+    private async Task ShowEditModal(Felhasznalo felhasznalo)
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("ID", felhasznalo.Id);
+        await modal.ShowAsync<UserEdit>(title: "Felhasználó szerkesztése", parameters: parameters);
+    }
+    private async Task AddAdminRole(Felhasznalo felhasznalo){
+        await _us.ChangeAdminRole(felhasznalo);
+        _nav.Refresh(true);
+    }
+}

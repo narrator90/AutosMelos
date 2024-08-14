@@ -1,0 +1,61 @@
+﻿@page "/lockoutUsers"
+@using Autokereskedes_BS.Data
+@using Autokereskedes_BS.Services
+@using Microsoft.AspNetCore.Authorization
+@inject ExtUserService eus
+@inject NavigationManager _nav
+@rendermode InteractiveServer
+
+@attribute [Authorize(Roles = "Administrator")]
+
+<h3>Kizárt felhasználók</h3>
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            @if (UserList.Count() > 0)
+            {
+                <div class="card-header">Felhasználó Lista</div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead><tr>
+                            <th>Felhasználó név</th>
+                            <th>Teljes Név</th>
+                            <th>Kedvenc Autók száma</th>
+                            <th>Aktív</th>
+                            <th>Kizárva eddig</th>
+                            <th> --- </th>
+                        </tr></thead>
+                        <tbody>
+                            @foreach (var i in UserList)
+                            {
+                             <tr>
+                                 <td>@i.UserName</td>
+                                 <td>@i.FullName</td>
+                                 <td>@i.Cars.Count()</td>
+                                 <td>@i.Active</td>
+                                 <td>@i.LockoutEnd</td>
+                                    <td><Button class="btn btn-warning" @onclick="() => Unlock(i)">Kizárás feloldása</Button></td>
+                             </tr>   
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    private List<ApplicationUser> UserList { get; set; } = new();
+    protected override void OnInitialized()
+    {
+        UserList = eus.GetLockedOutUsers();
+        base.OnInitialized();
+    }
+    private void Unlock(ApplicationUser user){
+        eus.UnlockUser(user);
+        _nav.Refresh();
+    }
+}
